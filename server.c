@@ -118,9 +118,11 @@ int main(int argc, char *argv[]) {
   port = atoi(argv[1]);
 	server_sock = socket(AF_INET,SOCK_STREAM,0);
 	memset(server.sin_zero,'\0',sizeof(server.sin_zero));
+  
+  bzero((char *)&server, sizeof(server));
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
-	server.sin_addr.s_addr = inet_addr("172.30.124.57");
+	server.sin_addr.s_addr = htonl(INADDR_ANY);
   struct user client;
   client_size = sizeof(client_addr);
   char ip[INET_ADDRSTRLEN];

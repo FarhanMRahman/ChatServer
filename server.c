@@ -14,6 +14,7 @@ struct user {
   int socket;
   char ip[INET_ADDRSTRLEN];
   char username[100];
+  char curr_room[100];
 };
 
 struct user client_list[500];
@@ -35,8 +36,10 @@ void join(struct user client, char *message) {
 
 }
 
-void print_rooms() {
-
+void print_rooms(struct user client) {
+  if(send(client.socket, "yo", 2, 0) < 0) {
+    perror("Couldn't send message.");
+  }
 }
 
 void leave(struct user client) {
@@ -58,7 +61,7 @@ void check_msg(char *message, struct user client) {
     join(client, message);
   }
   else if(strcmp(command, "\\ROOMS") == 0) {
-    print_rooms();
+    print_rooms(client);
   }
   else if(strcmp(command, "\\LEAVE") == 0) {
     leave(client);
@@ -117,7 +120,7 @@ int main(int argc, char *argv[]) {
 	memset(server.sin_zero,'\0',sizeof(server.sin_zero));
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
-	server.sin_addr.s_addr = inet_addr("localhost");
+	server.sin_addr.s_addr = inet_addr("172.30.124.57");
   struct user client;
   client_size = sizeof(client_addr);
   char ip[INET_ADDRSTRLEN];

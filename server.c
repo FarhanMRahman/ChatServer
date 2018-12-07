@@ -24,11 +24,25 @@ struct room {
   char room_name[100];
 };
 
-void *receive(void *socket) {
-  int *x;
-  int y = 1;
-  x = &y;
-  return x;
+void send_msg(char *message, struct user client) {
+  
+}
+
+void *receive(void *u) {
+  struct user client = *(struct user *) u;
+  char message[100];
+
+  while(1) {
+    int len = recv(client.socket, message, 100, 0);
+    if(len > 0) {
+      message[len] = '\0';
+      send_msg(message, client);
+      memset(message, '\0', sizeof(message));
+    }
+    else {
+      break;
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -47,12 +61,9 @@ int main(int argc, char *argv[]) {
   struct sockaddr_in client_addr;
 
   socklen_t client_size;
-
   pthread_t client_thread;
 
   int server_sock, client_sock, port;
-
-  char message[100];
 
   port = atoi(argv[1]);
 	server_sock = socket(AF_INET,SOCK_STREAM,0);

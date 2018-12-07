@@ -24,8 +24,55 @@ struct room {
   char room_name[100];
 };
 
-void send_msg(char *message, struct user client) {
-  
+struct room room_list[500];
+
+//Sliding in the DMs
+void send_dm(char *message, struct user client) {
+
+}
+
+void join(struct user client, char *message) {
+
+}
+
+void print_rooms() {
+
+}
+
+void leave(struct user client) {
+
+}
+
+void who(struct user client) {
+
+}
+
+void help(struct user client) {
+
+}
+
+void check_msg(char *message, struct user client) {
+  char* command = strtok(message, " ");
+
+  if(strcmp(command, "\\JOIN") == 0) {
+    join(client, message);
+  }
+  else if(strcmp(command, "\\ROOMS") == 0) {
+    print_rooms();
+  }
+  else if(strcmp(command, "\\LEAVE") == 0) {
+    leave(client);
+  }
+  else if(strcmp(command, "\\WHO") == 0) {
+    who(client);
+  }
+  else if(strcmp(command, "\\HELP") == 0) {
+    help(client);
+  }
+  else {
+    send_dm(message, client);
+  }
+
 }
 
 void *receive(void *u) {
@@ -36,7 +83,7 @@ void *receive(void *u) {
     int len = recv(client.socket, message, 100, 0);
     if(len > 0) {
       message[len] = '\0';
-      send_msg(message, client);
+      check_msg(message, client);
       memset(message, '\0', sizeof(message));
     }
     else {

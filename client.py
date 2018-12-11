@@ -1,7 +1,7 @@
 from socket import *
 
 SERVER_NAME = 'localhost'
-SERVER_PORT = 3000
+SERVER_PORT = 9999
 
 
 def connect():

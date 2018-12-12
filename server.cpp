@@ -190,9 +190,15 @@ void who(string message, int sockno) {
     pthread_mutex_unlock(&mutex);
 }
 
-//Function when \HELP is called, sends a message of all allowed commands
+//Function when \HELP is called, prints out all allowed commands
 void help(int socket) {
-    string msg = "help info\n";
+    string msg = "Help Information:\n"
+				"\\JOIN: list off all the rooms,\n"
+				"\\ROOMS: available rooms,\n"
+				"\\LEAVE: leaving a chat,\n"
+				"\\WHO: which people are in the chat,\n"
+				"\\HELP: list of all the commands,\n"
+				"\\nickname message: personal message\n";
 	pthread_mutex_lock(&mutex);
 	if(send(socket, msg.c_str(), msg.length(), 0) < 0) {
 		perror("sending failure");

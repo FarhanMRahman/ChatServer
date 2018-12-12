@@ -28,7 +28,21 @@ void *receive_msg(void *sock)
 	}
 }
 
-vector<string> fileToVec(string inputFile) {
+vector <string> filesToVec(string filename)
+{
+	ifstream inFile;
+	string file;
+	string word;
+	vector<string> lines;
+	inFile.open(filename);
+	while(getline(inFile, file)
+	{
+	  word.push_back(lines);
+	}
+	return lines
+}
+
+/*	vector<string> fileToVec(string inputFile) {
 	ifstream stream;
 	vector<string> lines;
 	string line;
@@ -36,7 +50,7 @@ vector<string> fileToVec(string inputFile) {
 		lines.push_back(line);
 	}
 	return lines;
-}
+} */
 
 int main(int argc, char *argv[])
 {

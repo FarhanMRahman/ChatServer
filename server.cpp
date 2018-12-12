@@ -13,6 +13,7 @@
 
 using namespace std;
 
+//Struct that contains information about the client
 struct user {
 	string username;
 	int socket; 
@@ -20,23 +21,24 @@ struct user {
 	string curr_room;
 };
 
+//Hashmaps to store the list of clients and the list of rooms
 map<string, user> clients_list;
-map<string, set<string>> rooms_list;
+map<string, set<string> > rooms_list;
 
 int clients[100];
 
 int num_clients = 0;
 int num_rooms = 0;
 
-
-
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+//Function to grab username from message
 string get_username(string message){
     int len = message.find(":");
     return message.substr(0, len);
 }
 
+//Function to send direct message to another user on the system
 void send_dm(string message, int sockno) {
     pthread_mutex_lock(&mutex);
     
@@ -89,6 +91,7 @@ void send_dm(string message, int sockno) {
 
 }
 
+//Function when \JOIN is called, joins requested room
 void join(int sockno, string message) {
 	pthread_mutex_lock(&mutex);
 	
@@ -130,13 +133,13 @@ void join(int sockno, string message) {
 	pthread_mutex_unlock(&mutex);
 }
 
-// When \ROOM is being called
+//Function when \ROOMS is called, prints list of existing rooms
 void print_rooms(int socket) {
     pthread_mutex_lock(&mutex);
 	string msg = "Rooms: ";
 	int i = 0;
 
-    for(map<string, set<string>>::iterator it = rooms_list.begin(); it != rooms_list.end(); it++){
+    for(map<string, set<string> >::iterator it = rooms_list.begin(); it != rooms_list.end(); it++){
         msg += it->first;
         if(i++ != num_rooms - 1) msg += ", ";
     }
@@ -147,6 +150,7 @@ void print_rooms(int socket) {
 	pthread_mutex_unlock(&mutex);
 }
 
+//Function when \LEAVE is called, leaves current room.
 void leave(string message, int sockno) {
 	pthread_mutex_lock(&mutex);
 	
@@ -162,6 +166,7 @@ void leave(string message, int sockno) {
 	pthread_mutex_unlock(&mutex);
 }
 
+//Function when \WHO is called, prints list of users in current room.
 void who(string message, int sockno) {
 	pthread_mutex_lock(&mutex);
 	
@@ -185,7 +190,7 @@ void who(string message, int sockno) {
     pthread_mutex_unlock(&mutex);
 }
 
-// When \HELP is being called. It will send a message of all the commands with details
+//Function when \HELP is called, sends a message of all allowed commands
 void help(int socket) {
     string msg = "help info\n";
 	pthread_mutex_lock(&mutex);
@@ -203,7 +208,6 @@ void register_user(string message, int sockno){
 	u->username = username;
 
     clients_list[username] = *u;
-    //printf("%s: %d\n", u->username.c_str(), clients_list[username].socket);
 }
 
 //Takes in each command or message a user is trying to send. 
@@ -247,21 +251,6 @@ void check_msg(char *message, int sockno) {
     send_dm(message, sockno);
   }
 
-}
-
-void sendtoall(char *msg,int curr)
-{
-	int i;
-	pthread_mutex_lock(&mutex);
-	for(i = 0; i < num_clients; i++) {
-		if(clients[i] != curr) {
-			if(send(clients[i],msg,strlen(msg),0) < 0) {
-				perror("sending failure");
-				continue;
-			}
-		}
-	}
-	pthread_mutex_unlock(&mutex);
 }
 
 //The server will take in the message the client is trying to send to a private or group message
@@ -317,17 +306,6 @@ int main(int argc,char *argv[])
 
 	struct user cl;
     char ip[INET_ADDRSTRLEN];
-	
-	/*
-    // dummy data
-    num_rooms = 3;
-    rooms_list.push_back("Monkey Bar");
-    rooms_list.push_back("Spoke");
-    rooms_list.push_back("Lit");  
-    
-
-	//
-	*/
 
 	port = atoi(argv[1]);
 	server_sock = socket(AF_INET,SOCK_STREAM,0);

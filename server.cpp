@@ -9,17 +9,19 @@
 #include <pthread.h>
 #include <vector>
 #include <map>
+#include <set>
 
 using namespace std;
 
 struct user {
+	string username;
 	int socket; 
 	char ip[INET_ADDRSTRLEN];
-	int curr_room;
+	string curr_room;
 };
 
-map<string, int> clients_list;
-vector<string> rooms_list;
+map<string, user> clients_list;
+map<string, set<string>> rooms_list;
 
 int clients[100];
 
@@ -29,6 +31,11 @@ int num_rooms = 0;
 
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+string get_username(string message){
+    int len = message.find(":");
+    return message.substr(0, len);
+}
 
 void send_dm(string message, int sockno) {
     pthread_mutex_lock(&mutex);
@@ -45,11 +52,11 @@ void send_dm(string message, int sockno) {
 
     int other_sockno = -1;
     string username;
-    for(map<string, int>::iterator it = clients_list.begin(); it != clients_list.end(); it++){
+    for(map<string, user>::iterator it = clients_list.begin(); it != clients_list.end(); it++){
         if(other_username.compare(it->first) == 0){
-            other_sockno = it->second;
+            other_sockno = it->second.socket;
         }
-        if(sockno == it->second){
+        if(sockno == it->second.socket){
             username = it->first;
         }
     }
@@ -78,64 +85,104 @@ void send_dm(string message, int sockno) {
         }
     }
 
-
     pthread_mutex_unlock(&mutex);
 
 }
 
-void join(int sockno, char *message) {
-    /*
-    pthread_mutex_lock(&mutex);
-    for(int i = 0; i < num_rooms; i++){
-        strcat(msg, rooms_list[i]);
-        if(i != num_rooms - 1) strcat(msg, comma);
-    }
-    
-	if(send(socket, msg, strlen(msg), 0) < 0) {
-		perror("sending failure");
+void join(int sockno, string message) {
+	pthread_mutex_lock(&mutex);
+	
+	int start = message.find(":") + 1;
+    start = message.find(" ", start) + 1;
+    int end = message.find(" ", start);
+    string username = message.substr(start, (end - start));
+	
+	printf("user: %s\n", username.c_str());
+
+	start = message.find(" ", end) + 1;
+    end = message.find(" ", start);
+	string roomname = message.substr(start, (message.length() - start - 1));
+	
+	printf("room: %s\n", roomname.c_str());
+
+	if(rooms_list.find(roomname) == rooms_list.end()){
+		set<string> s;
+		s.insert(username);
+		rooms_list[roomname] = s;
+		clients_list[username].curr_room = roomname;
+		num_rooms++;
+
+		string msg = username + " joined room " + roomname + ".";
+		if(::send(sockno, msg.c_str(), msg.length(), 0) < 0) {
+			perror("sending failure");
+		}
 	}
-    pthread_mutex_unlock(&mutex);
-    */
+
+	else{
+		rooms_list[roomname].insert(username);
+		clients_list[username].curr_room = roomname;
+		string msg = username + " joined room " + roomname + ".\n";
+		if(::send(sockno, msg.c_str(), msg.length(), 0) < 0) {
+			perror("sending failure");
+		}
+	}
+
+	pthread_mutex_unlock(&mutex);
 }
 
 // When \ROOM is being called
 void print_rooms(int socket) {
     pthread_mutex_lock(&mutex);
-    string msg = "Rooms: ";
+	string msg = "Rooms: ";
+	int i = 0;
 
-    for(int i = 0; i < num_rooms; i++){
-        msg += rooms_list.at(i);
-        if(i != num_rooms - 1) msg += ",";
+    for(map<string, set<string>>::iterator it = rooms_list.begin(); it != rooms_list.end(); it++){
+        msg += it->first;
+        if(i++ != num_rooms - 1) msg += ", ";
     }
-    
-	if(send(socket, msg.c_str(), msg.length(), 0) < 0) {
+	
+	if(::send(socket, msg.c_str(), msg.length(), 0) < 0) {
 		perror("sending failure");
 	}
 	pthread_mutex_unlock(&mutex);
 }
 
-void leave(int sockno) {
+void leave(string message, int sockno) {
+	pthread_mutex_lock(&mutex);
+	
+	string username = get_username(message);
+	string roomname = clients_list[username].curr_room;
+	rooms_list[roomname].erase(username);
 
+	string msg = username + " left this room.\n";
+	if(::send(sockno, msg.c_str(), msg.length(), 0) < 0) {
+		perror("sending failure");
+	}
+
+	pthread_mutex_unlock(&mutex);
 }
 
-void who(int sockno) {
-    /*	pthread_mutex_lock(&mutex);
-	string msg = "People in this chat: ";
-	int room = -1;
- 	for(int i = 0; i < num_rooms; i++)
-	 {
-        int temp = clients_list.at(i);
-				if(temp == sockno)
-				{
-					room = clients_list.at(i);
-				}
-    } */
+void who(string message, int sockno) {
+	pthread_mutex_lock(&mutex);
+	
+	string msg = "People in this room: ";
+	string username = get_username(message);
+	string roomname = clients_list[username].curr_room;
+	printf("u: %s, r: %s\n", username.c_str(), roomname.c_str());
+	
+	set<string> s = rooms_list[roomname];
+	int i = 0;
+
+	for(set<string>::iterator it = s.begin(); it != s.end(); it++){
+		msg += *it;
+		if(i != s.size() - 1) msg += ", ";
+	}
+
+	if(::send(sockno, msg.c_str(), msg.length(), 0) < 0) {
+		perror("sending failure");
+	}
     
-    /*	if(send(socket, msg.c_str(), msg.length(), 0) < 0) {
-            perror("sending failure");
-        }
-        pthread_mutex_unlock(&mutex);
-    */
+    pthread_mutex_unlock(&mutex);
 }
 
 // When \HELP is being called. It will send a message of all the commands with details
@@ -148,15 +195,15 @@ void help(int socket) {
 	pthread_mutex_unlock(&mutex);
 }
 
-string get_username(string message){
-    int len = message.find(":");
-    return message.substr(0, len);
-}
-
 void register_user(string message, int sockno){
-    string username = get_username(message);
-    clients_list[username] = sockno;
-    //printf("%s: %d\n", username.c_str(), clients_list[username]);
+	string username = get_username(message);
+
+	user *u = new user();
+	u->socket = sockno;
+	u->username = username;
+
+    clients_list[username] = *u;
+    //printf("%s: %d\n", u->username.c_str(), clients_list[username].socket);
 }
 
 //Takes in each command or message a user is trying to send. 
@@ -178,17 +225,17 @@ void check_msg(char *message, int sockno) {
 	  }
   }
 
-  if(strcmp(command, "\\JOIN\n") == 0) {
+  if(strcmp(command, "\\JOIN") == 0) {
     join(sockno, message);
   }
   else if(strcmp(command, "\\ROOMS\n") == 0) {
     print_rooms(sockno);
   }
   else if(strcmp(command, "\\LEAVE\n") == 0) {
-    leave(sockno);
+    leave(message, sockno);
   }
   else if(strcmp(command, "\\WHO\n") == 0) {
-    who(sockno);
+    who(message, sockno);
   }
   else if(strcmp(command, "\\HELP\n") == 0) {
     help(sockno);
@@ -270,7 +317,8 @@ int main(int argc,char *argv[])
 
 	struct user cl;
     char ip[INET_ADDRSTRLEN];
-    
+	
+	/*
     // dummy data
     num_rooms = 3;
     rooms_list.push_back("Monkey Bar");
@@ -278,7 +326,8 @@ int main(int argc,char *argv[])
     rooms_list.push_back("Lit");  
     
 
-    //
+	//
+	*/
 
 	port = atoi(argv[1]);
 	server_sock = socket(AF_INET,SOCK_STREAM,0);

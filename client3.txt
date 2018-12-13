@@ -1,0 +1,18 @@
+\SLEEP 9
+\ROOMS
+\SLEEP 21
+\JOIN mukul Hasbrouck
+\SLEEP 24
+\HELP
+\SLEEP 27
+\WHO
+\SLEEP 39
+\Hasbrouck hey guys
+\SLEEP 45
+\Hasbrouck yeah sure
+\SLEEP 66
+\farhan is she going to ask?
+\SLEEP 105
+\Hasbrouck that is great!
+\SLEEP 108
+\LEAVE

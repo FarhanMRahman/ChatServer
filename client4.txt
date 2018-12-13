@@ -1,0 +1,14 @@
+\SLEEP 54
+\ROOMS
+\SLEEP 57
+\JOIN jared CS
+\SLEEP 66
+\CS hi tim
+\SLEEP 75
+\CS Yeah still grading the projects
+\SLEEP 87
+\CS Do I say anything?
+\SLEEP 93
+\arushi Yes you got an A!!!
+\SLEEP 111
+\LEAVE

@@ -19,10 +19,24 @@ If you add a .txt file when executing the client, the client will run the comman
 
 # Server Implementation
 We created a struct for the client, which stores the client's username, socket number, ip address, and any rooms the client is in.
+```
+struct user {
+	string username;
+	int socket; 
+	string curr_room;
+	char ip[INET_ADDRSTRLEN];
+};
+```
 
 We store the list of clients in a hashmap using the client's username as the key, and the client struct itself as the value.
+```
+map<string, user> clients_list;
+```
 
 We store the list of rooms in a hashmap using the room's name as the key, and a set containing the usernames of every client currently in that room as the value.
+```
+map<string, set<string>> rooms_list;
+```
 
 When a client connects to our server, we create a new thread for that client, and send the message received to our check_msg() method, which checks the received message for any of the required commands, like \JOIN or \HELP. The method calls a function based on what the message contains, and we have an individual method for each possible command.
 

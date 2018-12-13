@@ -1,0 +1,6 @@
+\SLEEP 3
+\arushi hello
+\SLEEP 6
+\arushi I'm good! How are you?
+\SLEEP 6
+\ROOMS

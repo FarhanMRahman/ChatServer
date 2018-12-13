@@ -1,7 +1,0 @@
-16.\ROOMS
-17.\JOIN tim CS207
-21.\CS207 hi jared
-24.\CS207 Is the gradings going good?
-31.\CS207 If you graded it, then you can tell them. 
-34.\Hasbrouck126 Hey guys you got an A for the group project!! Congrats!
-42.\LEAVE

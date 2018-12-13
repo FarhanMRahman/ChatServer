@@ -289,16 +289,16 @@ void check_msg(string message, int sockno) {
 	if(command.compare("\\JOIN") == 0) {
 		join(sockno, message);
 	}
-	else if(command.compare("\\ROOMS") == 0) {
+	else if(command.compare("\\ROOMS\n") == 0) {
 		print_rooms(sockno);
 	}
-	else if(command.compare("\\LEAVE") == 0) {
+	else if(command.compare("\\LEAVE\n") == 0) {
 		leave(message, sockno);
 	}
-	else if(command.compare("\\WHO") == 0) {
+	else if(command.compare("\\WHO\n") == 0) {
 		who(message, sockno);
 	}
-	else if(command.compare("\\HELP") == 0) {
+	else if(command.compare("\\HELP\n") == 0) {
 		help(sockno);
 	}
 	else if(command.compare("NEW") == 0) {

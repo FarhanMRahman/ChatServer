@@ -1,0 +1,11 @@
+1.\ROOMS
+4.\JOIN arushi Hasbrouck126
+10.\WHO
+11.\Haskbrouck126 hey guys whats up
+14.\Haskbrouck126 should I message roomB about our grade?
+27.\WHERE
+28.\HElP
+29.\CS207 Hey what is our grade for the project? Did we get an A for this project?
+33.\jared THANK YOU
+39.\Haskbrouck126 Bye have a nice break!
+40.\LEAVE

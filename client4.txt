@@ -1,0 +1,10 @@
+18.\ROOMS
+19.\JOIN jared CS207
+21.\WHO
+22.\CS207 hi tim
+25.\CS207 Yeah still grading the projects
+30.\CS207 Do I say anything?
+32.\arushi Yes you got an A!!!
+38.\LEAVE
+
+

@@ -1,0 +1,12 @@
+\SLEEP 1
+2.\ROOMS
+\SLEEP 1
+5.\JOIN farhan Hasbrouck126 
+6.\WHO
+12.\Haskbrouck126 hey everyone
+20.\Haskbrouck126 yes
+26.\mukul yeah she is going to talk to them
+35.\time thats great, thank you!!
+41.\LEAVE
+
+

@@ -15,19 +15,19 @@
 using namespace std;
 
 //Struct that contains information about the client
-struct user {
-	string username;
-	int socket; 
-	string curr_room;
-	char ip[INET_ADDRSTRLEN];
+struct user 
+{
+	string username; //Client nickname
+	int socket; //Client socket
+	string curr_room; //Current location of the room
+	char ip[INET_ADDRSTRLEN]; // Client IP Address
 };
 
 //Hashmaps to store the list of clients and the list of rooms
 map<string, user> clients_list;
-map<string, set<string>> rooms_list;
+map<string, set<string> > rooms_list;
 
 int clients[100];
-
 int num_clients = 0;
 int num_rooms = 0;
 
@@ -86,7 +86,7 @@ void send_dm(string message, int sockno) {
 		return;
 	}
 
-	for(map<string, set<string>>::iterator mit = rooms_list.begin(); mit != rooms_list.end(); mit++){
+	for(map<string, set<string> >::iterator mit = rooms_list.begin(); mit != rooms_list.end(); mit++){
         if(other_username.compare(mit->first) == 0){
 			other_sockno = -2;
 			set<string> s = rooms_list[other_username];
@@ -178,7 +178,7 @@ void print_rooms(int socket) {
 	string msg = "Rooms: ";
 	int i = 0;
 
-    for(map<string, set<string>>::iterator it = rooms_list.begin(); it != rooms_list.end(); it++){
+    for(map<string, set<string> >::iterator it = rooms_list.begin(); it != rooms_list.end(); it++){
         msg += it->first;
         if(i++ != rooms_list.size() - 1) msg += ", ";
 	}
@@ -337,10 +337,9 @@ void *receive_msg(void *sock)
 }
 
 
-
-//The server will take in the message the client is trying to send to a private or group message
 int main(int argc,char *argv[])
 {
+	//Checking if the client writes too many or not enought argunments. If either one it will give directions on what to write.
 	if(argc > 2) {
 		perror("Too many arguments. Usage: ./s (or your output file name) <port>\n");
 		exit(1);
@@ -351,6 +350,7 @@ int main(int argc,char *argv[])
 		exit(1);
 	}
 
+	//Client and server ID address information
 	struct sockaddr_in server;
 	struct sockaddr_in client;
 
@@ -359,11 +359,13 @@ int main(int argc,char *argv[])
 	int port;
 	int optval = 1;
 
+	//Waiting for incoming connections and creates a new thread to handle the connections
 	socklen_t client_size;
 	pthread_t client_thread;
 
+	//For the client and the address
 	struct user cl;
-    char ip[INET_ADDRSTRLEN];
+    char ip[INET_ADDRSTRLEN]; 
 	
 	port = atoi(argv[1]);
 	server_sock = socket(AF_INET,SOCK_STREAM,0);
@@ -373,12 +375,14 @@ int main(int argc,char *argv[])
 		return -1;
 	}
 
+	//Listening will be an endpoint for all requests to port on any IP address for this host.
 	memset(server.sin_zero,'\0',sizeof(server.sin_zero));
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
 	server.sin_addr.s_addr = inet_addr("127.0.0.1");
 	client_size = sizeof(client);
     
+	//Binding the address
 	if(::bind(server_sock,(struct sockaddr *)&server,sizeof(server)) >= 0) {
 		printf("Binding Successful\n");
 	}
@@ -387,6 +391,7 @@ int main(int argc,char *argv[])
 		exit(1);
 	}
 
+	//Listing for the socket and ready to accept connection request
 	if(listen(server_sock, 1024) >= 0) {
 		printf("Listening Successful\n");
 	}

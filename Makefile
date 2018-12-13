@@ -13,16 +13,13 @@ ${OBJ_DIR}:
 submission:
 	zip -r ChatSystem-submission.zip src
 
-obj/%.o: src/%.cpp ${OBJ_DIR}
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
-
-server: obj/server.o
+server: scr/server.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ 
 
-client: obj/client.o
+client: scr/client.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ 
 
 clean:
 	rm -f server client submission
 	rm -rf obj
-	rm -f *~ obj/*.o obj/*.a *.zip
+

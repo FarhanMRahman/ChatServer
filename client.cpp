@@ -15,6 +15,8 @@
 
 using namespace std;
 
+pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+
 void *receive_msg(void *sock)
 {
 	int client_sock = *((int *)sock);
@@ -28,29 +30,15 @@ void *receive_msg(void *sock)
 	}
 }
 
-vector <string> filesToVec(string filename)
-{
-	ifstream inFile;
-	string file;
-	string word;
-	vector<string> lines;
-	inFile.open(filename);
-	while(getline(inFile, file)
-	{
-	  word.push_back(lines);
-	}
-	return lines
-}
-
-/*	vector<string> fileToVec(string inputFile) {
-	ifstream stream;
+vector<string> fileToVec(string inputFile) {
+	ifstream stream(inputFile);
 	vector<string> lines;
 	string line;
 	while(getline(stream, line)) {
 		lines.push_back(line);
 	}
 	return lines;
-} */
+}
 
 int main(int argc, char *argv[])
 {
@@ -59,25 +47,27 @@ int main(int argc, char *argv[])
 	char username[100];
 	char message2[600];
 	char ip[INET_ADDRSTRLEN];
-	pthread_t client_thread;
+	pthread_t client_recv_thread, client_send_thread;
 	int length;
 	int client_sock;
 	int port;
 	vector<string> inputLines;
 
 	if(argc > 4) {
-		printf("Too many arguments");
+		printf("Too many arguments. Usage: ./c (or your output file name) <username> <port>\n");
 		exit(1);
 	}
 
 	if(argc == 4) {
 		string inputFile = argv[3];
 		inputLines = fileToVec(inputFile);
-		printf("Using input file for commands.");
 	}
 	port = atoi(argv[2]);
+
 	strcpy(username,argv[1]);
-	client_sock = socket(AF_INET,SOCK_STREAM,0);
+	string u = argv[1];
+
+	client_sock = socket(AF_INET, SOCK_STREAM, 0);
 	memset(server.sin_zero,'\0',sizeof(server.sin_zero));
 	server.sin_family = AF_INET;
 	server.sin_port = htons(port);
@@ -85,16 +75,23 @@ int main(int argc, char *argv[])
 	char user[200];
 	strcpy(user, username);
 	strcat(user, ":NEW");
+	printf("You are connected to the server with IP 127.0.0.1. Start chatting!\n");
+	
 
 	if(connect(client_sock,(struct sockaddr *)&server,sizeof(server)) < 0) {
-		perror("You have no connection not esatablished");
+		perror("Connect Failed.\n");
 		exit(1);
 	}
-	else write(client_sock,user,strlen(user));
+	
+	pthread_mutex_lock(&mut);
+	::send(client_sock, user, strlen(user), 0);
+	sleep(3);
+	pthread_mutex_unlock(&mut);
 
 	inet_ntop(AF_INET, (struct sockaddr *)&server, ip, INET_ADDRSTRLEN);
-	printf("You are connected to %s, you can now start chatting\n",ip);
-	pthread_create(&client_thread, NULL, receive_msg, &client_sock);
+
+	pthread_create(&client_recv_thread, NULL, receive_msg, &client_sock);
+
 	if(argc < 4) {
 		while(*(fgets(message, 500, stdin)) > 0) {
 			strcpy(message2, username);
@@ -103,7 +100,7 @@ int main(int argc, char *argv[])
 			length = write(client_sock, message2, strlen(message2));
 			if(length < 0) 
 			{
-				perror("Message not sent");
+				perror("Write Failed..");
 				exit(1);
 			}
 			memset(message,'\0',sizeof(message));
@@ -112,20 +109,33 @@ int main(int argc, char *argv[])
 	}
 	else {
 		for(int i = 0; i < inputLines.size(); i++) {
-			strcpy(message2, username);
-			strcat(message2 ,":");
-			strcat(message2, inputLines.at(i).c_str());
-			length = write(client_sock, message2, strlen(message2));
+			pthread_mutex_lock(&mut);
+
+			int end = inputLines.at(i).find(" ");
+			string firstWord = inputLines.at(i).substr(0, end);
+
+			if(firstWord.compare("\\SLEEP") == 0){
+				string s = inputLines.at(i).substr(end + 1, inputLines.at(i).length() - end - 1);
+				int sleep_amount = stoi(s);
+				sleep(sleep_amount);
+				pthread_mutex_unlock(&mut);
+				continue;
+			}
+			
+			string msg = u + ":" + inputLines.at(i);
+			
+			length = ::send(client_sock, msg.c_str(), msg.length(), 0);
 			if(length < 0) 
 			{
-				perror("Message not sent");
+				perror("Write Failed.");
 				exit(1);
 			}
-			memset(message,'\0',sizeof(message));
-			memset(message2,'\0',sizeof(message2));
+			pthread_mutex_unlock(&mut);
 		}
 	}
-	pthread_join(client_thread, NULL);
+
+	pthread_join(client_recv_thread, NULL);
+
 	close(client_sock);
 
 }

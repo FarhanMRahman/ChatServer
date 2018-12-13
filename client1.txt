@@ -1,11 +1,22 @@
+\SLEEP 3
 \ROOMS
-\JOIN arushi Hasbrouck126
+\SLEEP 12
+\JOIN arushi Hasbrouck
+\SLEEP 30
 \WHO
-\Haskbrouck126 hey guys whats up
-\Haskbrouck126 should I message roomB about our grade?
+\SLEEP 33
+\Hasbrouck hey guys whats up
+\SLEEP 42
+\Hasbrouck should I message roomB about our grade?
+\SLEEP 78
 \WHERE
+\SLEEP 81
 \HElP
-\CS207 Hey what is our grade for the project? Did we get an A for this project?
+\SLEEP 84
+\CS Hey what is our grade for the project? Did we get an A for this project?
+\SLEEP 96
 \jared THANK YOU
-\Haskbrouck126 Bye have a nice break!
+\SLEEP 114
+\Hasbrouck Bye have a nice break!
+\SLEEP 117
 \LEAVE
